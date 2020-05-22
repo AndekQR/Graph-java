@@ -21,9 +21,10 @@ CREATE TABLE GRAPHPART(
     FOREIGN KEY (nodeId) REFERENCES NODE(id)
 ) ENGINE = InnoDB;
 
+-- wirtualne krawędzie mają nodeId == null
 CREATE TABLE EDGE(
     id int NOT NULL AUTO_INCREMENT,
-    nodeId int NOT NULL,
+    nodeId int,
     graphPartId int NOT NULL,
     weight double NOT NULL,
     PRIMARY KEY (id),

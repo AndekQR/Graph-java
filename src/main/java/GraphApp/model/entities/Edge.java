@@ -1,31 +1,29 @@
 package GraphApp.model.entities;
 
 import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.property.SimpleIntegerProperty;
 
 public class Edge {
 
     private int id;
     private Node destination;
-    private DoubleProperty weight;
+    private final DoubleProperty weight;
     private int graphPartId;
 
     public Edge(Node destination, Double weight) {
         this.destination=destination;
-        this.weight = new SimpleDoubleProperty(weight);
+        this.weight=new SimpleDoubleProperty(weight);
     }
 
     public Edge(int id, Node destination, Double weight, int graphPartId) {
-        this.id= id;
+        this.id=id;
         this.destination=destination;
-        this.weight= new SimpleDoubleProperty(weight);
-        this.graphPartId = graphPartId;
+        this.weight=new SimpleDoubleProperty(weight);
+        this.graphPartId=graphPartId;
     }
 
     public Edge() {
-        this.weight = new SimpleDoubleProperty();
+        this.weight=new SimpleDoubleProperty();
     }
 
     public int getId() {
@@ -48,12 +46,12 @@ public class Edge {
         return weight.get();
     }
 
-    public DoubleProperty weightProperty() {
-        return weight;
-    }
-
     public void setWeight(double weight) {
         this.weight.set(weight);
+    }
+
+    public DoubleProperty weightProperty() {
+        return weight;
     }
 
     @Override

@@ -1,8 +1,6 @@
 package GraphApp.model.entities;
 
-import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ListProperty;
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleListProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -13,26 +11,26 @@ public class GraphPart {
 
     private int id;
     private Node node;
-    private ListProperty<Edge> edges;
+    private final ListProperty<Edge> edges;
     private int graphId;
 
     public GraphPart(Node node, Edge... edges) {
         this.node=node;
-        ObservableList<Edge> observableList =FXCollections.observableArrayList(edges);
-        this.edges = new SimpleListProperty<>(observableList);
+        ObservableList<Edge> observableList=FXCollections.observableArrayList(edges);
+        this.edges=new SimpleListProperty<>(observableList);
     }
 
     public GraphPart(int id, Node node, List<Edge> edges, int grapId) {
-        this.id= id;
+        this.id=id;
         this.node=node;
-        ObservableList<Edge> observableList = FXCollections.observableArrayList(edges);
-        this.edges= new SimpleListProperty<>(observableList);
-        this.graphId = grapId;
+        ObservableList<Edge> observableList=FXCollections.observableArrayList(edges);
+        this.edges=new SimpleListProperty<>(observableList);
+        this.graphId=grapId;
     }
 
     public GraphPart() {
-        ObservableList<Edge> observableList = FXCollections.observableArrayList();
-        this.edges = new SimpleListProperty<>(observableList);
+        ObservableList<Edge> observableList=FXCollections.observableArrayList();
+        this.edges=new SimpleListProperty<>(observableList);
     }
 
     public Node getNode() {
@@ -48,12 +46,12 @@ public class GraphPart {
         return edges.get();
     }
 
-    public ListProperty<Edge> edgesProperty() {
-        return edges;
-    }
-
     public void setEdges(ObservableList<Edge> edges) {
         this.edges.set(edges);
+    }
+
+    public ListProperty<Edge> edgesProperty() {
+        return edges;
     }
 
     @Override

@@ -17,9 +17,9 @@ import javafx.stage.StageStyle;
 
 public class MainView {
 
-    private static final int HEIGHT = 600;
-    private static final int WIDTH = 800;
-    private static final int CONTROL_PANEL_HEIGHT = 30;
+    private static final int HEIGHT=600;
+    private static final int WIDTH=800;
+    private static final int CONTROL_PANEL_HEIGHT=30;
 
     private final MainController mainController;
     private final boolean initialized=false;
@@ -33,7 +33,7 @@ public class MainView {
 
     public MainView(MainController mainController, GraphModel graphModel) {
         this.mainController=mainController;
-        this.graphModel = graphModel;
+        this.graphModel=graphModel;
         if (!initialized) initialize();
     }
 

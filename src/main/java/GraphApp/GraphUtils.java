@@ -20,7 +20,7 @@ public class GraphUtils {
     }
 
     public Node addNode(Graph graph, String label) throws Exception {
-        if(this.isLabelGood(graph, label)){
+        if (this.isLabelGood(graph, label)) {
             Node node=new Node(label);
             GraphPart graphPart=new GraphPart(node);
             graph.getGraphParts().add(graphPart);
@@ -31,9 +31,9 @@ public class GraphUtils {
     }
 
     private Boolean isLabelGood(final Graph graph, String label) {
-        for(GraphPart graphPart : graph.getGraphParts()) {
+        for (GraphPart graphPart : graph.getGraphParts()) {
             if (graphPart.getNode().getLabel().equals(label)) return false;
-            for(Edge edge : graphPart.getEdges()) {
+            for (Edge edge : graphPart.getEdges()) {
                 if (edge.getDestination().getLabel().equals(label)) return false;
             }
         }
@@ -41,7 +41,7 @@ public class GraphUtils {
     }
 
     public void addEdge(Node source, Node destination, Graph graph, Double weight) throws Exception {
-        if (source == null || destination == null || graph == null){
+        if (source == null || destination == null || graph == null) {
             throw new Exception("null during adding edge");
         }
         if (isInGraph(graph, source) && isInGraph(graph, destination)) {

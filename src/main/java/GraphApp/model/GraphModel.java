@@ -33,10 +33,17 @@ public class GraphModel {
                 graphPart.setId(insertedGraphpart.getId());
             }
             for (GraphPart graphPart : graph.getGraphParts()) {
-                for (Edge edge : graphPart.getEdges()) {
-                    Edge insertedEdge=insertEdge(edge, edge.getDestination(), graphPart.getId(), connection);
-                    edge.setId(insertedEdge.getId());
-                    edge.setGraphPartId(insertedEdge.getGraphPartId());
+                if (graphPart.getEdges().isEmpty()) {
+                    Edge edge=new Edge();
+                    edge.setGraphPartId(graphPart.getId());
+                    //wirtualna krawędz żeby można  było znaleźć graphpart przy pobieraniu z bazy
+                    insertEdge(edge, edge.getDestination(), graphPart.getId(), connection);
+                } else {
+                    for (Edge edge : graphPart.getEdges()) {
+                        Edge insertedEdge=insertEdge(edge, edge.getDestination(), graphPart.getId(), connection);
+                        edge.setId(insertedEdge.getId());
+                        edge.setGraphPartId(insertedEdge.getGraphPartId());
+                    }
                 }
             }
             return graph;
@@ -94,9 +101,14 @@ public class GraphModel {
     private Edge insertEdge(Edge edge, Node node, int graphpartId, Connection connection) throws SQLException {
         String query="INSERT INTO edge (nodeId, graphPartId, weight) VALUES (?,?,?)";
         try (PreparedStatement preparedStatement=connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
-            preparedStatement.setInt(1, node.getId());
+            if (node != null) {
+                preparedStatement.setInt(1, node.getId());
+                preparedStatement.setDouble(3, edge.getWeight());
+            } else {
+                preparedStatement.setNull(1, Types.INTEGER);
+                preparedStatement.setDouble(3, 1);
+            }
             preparedStatement.setInt(2, graphpartId);
-            preparedStatement.setDouble(3, edge.getWeight());
             int affectedRows=preparedStatement.executeUpdate();
 
             if (affectedRows == 0) {
@@ -136,105 +148,163 @@ public class GraphModel {
         }
     }
 
-    public List<Graph> getAllGraphs() {
-        List<Graph> methodResult = new ArrayList<>();
-        String query="SELECT * FROM graphpart\n" +
-                "INNER JOIN graph ON graphpart.graphId=graph.id\n" +
-                "INNER JOIN edge on graphpart.id = edge.graphPartId\n" +
-                "INNER JOIN node edgeNode on edge.nodeId = edgeNode.id\n" +
-                "INNER JOIN node gpNode ON graphpart.nodeId = gpNode.id";
+    public Optional<Graph> getGraph(int id) {
+        String query="(SELECT graph.id as 'graphId', graph.directed as 'graphDirected', graph.name as 'graphName', graph.created as 'graphCreated',\n" +
+                "        graphpart.id as 'graphPartId', edge.id as 'edgeId', edge.weight as 'edgeWeight', graphpart.nodeId as 'gpNodeId',\n" +
+                "        gpNode.label as 'gpNodeLabel', edge.nodeId as 'edgeNodeId', edgeNode.label as 'edgeNodeLabel'\n" +
+                "\n" +
+                " FROM edge\n" +
+                "          LEFT JOIN graphpart ON edge.graphPartId = graphpart.id\n" +
+                "          INNER JOIN graph ON graphpart.graphId = graph.id\n" +
+                "          INNER JOIN node edgeNode ON edge.nodeId = edgeNode.id\n" +
+                "          INNER JOIN node gpNode ON graphpart.nodeId = gpNode.id\n" +
+                "            WHERE graph.id = (?)\n" +
+                "    )\n" +
+                "UNION ALL\n" +
+                "(SELECT graph.id as 'graphId', graph.directed as 'graphDirected', graph.name as 'graphName', graph.created as 'graphCreated',\n" +
+                "        graphpart.id as 'graphPartId', edge.id as 'edgeId', edge.weight as 'edgeWeight', graphpart.nodeId as 'gpNodeId',\n" +
+                "        gpNode.label as 'gpNodeLabel', edge.nodeId as 'edgeNodeId', NULL as 'edgeNodeLabel'\n" +
+                " FROM edge\n" +
+                "          LEFT JOIN graphpart ON edge.graphPartId = graphpart.id\n" +
+                "          INNER JOIN graph ON graphpart.graphId = graph.id\n" +
+                "          INNER JOIN node gpNode ON graphpart.nodeId = gpNode.id\n" +
+                " WHERE edge.nodeId IS NULL AND graph.id = (?)\n" +
+                ");";
         try (Connection connection=DAO.getInstance().getConnection();
-             Statement statement=connection.createStatement();
-             ResultSet resultSet=statement.executeQuery(query);
+             PreparedStatement statement=connection.prepareStatement(query)
         ) {
-            while (resultSet.next()) {
-
-                boolean directed = resultSet.getBoolean("directed");
-                String graphName = resultSet.getString("name");
-                Date created = new java.util.Date(resultSet.getTimestamp("created").getTime());
-                int graphId = resultSet.getInt("graph.id");
-
-                // dodawanie grafu
-                if (methodResult.stream().noneMatch(graph -> graph.getId() == graphId)) {
-                    Graph graph = new Graph(graphName);
-                    graph.setDirected(directed);
-                    graph.setCreated(created);
-                    graph.setId(graphId);
-                    methodResult.add(graph);
+            statement.setInt(1, id);
+            statement.setInt(2, id);
+            try (ResultSet resultSet=statement.executeQuery()) {
+                List<Graph> graphsFromStndQuery=this.getGraphsFromStndQuery(resultSet);
+                if (graphsFromStndQuery.size() == 1) {
+                    return graphsFromStndQuery.stream().findFirst();
                 }
-
-                int graphPartId = resultSet.getInt("graphpart.id");
-                int edgeId = resultSet.getInt("edge.id");
-                double edgeWeight = resultSet.getDouble("weight");
-                int graphPartNodeId = resultSet.getInt("gpNode.id");
-                String gpNodeLabel = resultSet.getString("gpNode.label");
-                int edgeNodeId = resultSet.getInt("edgeNode.id");
-                String edgeNodeLabel = resultSet.getString("edgeNode.label");
-
-                //dodawanie graphPart do graph
-                methodResult.stream().filter(graph -> graph.getId() == graphId).findFirst().ifPresent(graph -> {
-                    if(graph.getGraphParts().stream().noneMatch(graphPart -> graphPart.getId() == graphPartId)) {
-                        GraphPart graphPart = new GraphPart();
-                        graphPart.setId(graphPartId);
-                        graphPart.setGraphId(graphId);
-                        graph.getGraphParts().add(graphPart);
-                    }
-
-                    //dodawanie edge do graphPart
-                    graph.getGraphParts().stream().filter(graphPart -> graphPart.getId() == graphId).findFirst().ifPresent(graphPart -> {
-                        if(graphPart.getEdges().stream().noneMatch(edge -> edge.getId() == edgeId)) {
-                            Edge edge = new Edge();
-                            edge.setId(edgeId);
-                            edge.setWeight(edgeWeight);
-                            graphPart.getEdges().add(edge);
-                        }
-
-                        //dodawanie node do edge
-                        graphPart.getEdges().stream().filter(edge -> edge.getId() == edgeId).findFirst().ifPresent(edge -> {
-                            //ten node może się już znajdować w innym graphPart
-                            Node node = null;
-                            for(GraphPart graphPart1 : graph.getGraphParts()) {
-                                if(graphPart1.getNode() != null && graphPart1.getNode().getId() == edgeNodeId) {
-                                    node = graphPart1.getNode();
-                                }
-                            }
-                            if (node == null) {
-                                node = new Node();
-                                node.setId(edgeNodeId);
-                                node.setLabel(edgeNodeLabel);
-                            }
-                            edge.setDestination(node);
-                        });
-
-                        //dodawanie node do graphPart
-                        if(graphPart.getNode() == null) {
-                            //ten node może się już znajdować w krawędzi innych graphPartów
-                            Node node = null;
-                            for(GraphPart graphPart1 : graph.getGraphParts()) {
-                                Optional<Edge> edgeWithCorrectNode=graphPart1.getEdges().stream().filter(edge -> {
-                                    if (edge.getDestination() != null) {
-                                        if (edge.getDestination().getId() == graphPartNodeId) {
-                                            return true;
-                                        }
-                                    }
-                                    return false;
-                                }).findFirst();
-                                if(edgeWithCorrectNode.isPresent()) {
-                                    node = edgeWithCorrectNode.get().getDestination();
-                                }
-                                if (node == null) {
-                                    node=new Node();
-                                    node.setId(graphPartNodeId);
-                                    node.setLabel(gpNodeLabel);
-                                }
-                                graphPart.setNode(node); //można tak bo java do listy dodaje referencje do obiektu
-                            }
-                        }
-                    });
-                });
             }
         } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        return Optional.empty();
+    }
+
+    public List<Graph> getAllGraphs() {
+        List<Graph> methodResult=new ArrayList<>();
+        String query="(SELECT graph.id as 'graphId', graph.directed as 'graphDirected', graph.name as 'graphName', graph.created as 'graphCreated',\n" +
+                "        graphpart.id as 'graphPartId', edge.id as 'edgeId', edge.weight as 'edgeWeight', graphpart.nodeId as 'gpNodeId',\n" +
+                "        gpNode.label as 'gpNodeLabel', edge.nodeId as 'edgeNodeId', edgeNode.label as 'edgeNodeLabel'\n" +
+                "\n" +
+                " FROM edge\n" +
+                "          LEFT JOIN graphpart ON edge.graphPartId = graphpart.id\n" +
+                "          INNER JOIN graph ON graphpart.graphId = graph.id\n" +
+                "          INNER JOIN node edgeNode ON edge.nodeId = edgeNode.id\n" +
+                "          INNER JOIN node gpNode ON graphpart.nodeId = gpNode.id)\n" +
+                "UNION ALL\n" +
+                "(SELECT graph.id as 'graphId', graph.directed as 'graphDirected', graph.name as 'graphName', graph.created as 'graphCreated',\n" +
+                "        graphpart.id as 'graphPartId', edge.id as 'edgeId', edge.weight as 'edgeWeight', graphpart.nodeId as 'gpNodeId',\n" +
+                "        gpNode.label as 'gpNodeLabel', edge.nodeId as 'edgeNodeId', NULL as 'edgeNodeLabel'\n" +
+                " FROM edge\n" +
+                "          LEFT JOIN graphpart ON edge.graphPartId = graphpart.id\n" +
+                "          INNER JOIN graph ON graphpart.graphId = graph.id\n" +
+                "          INNER JOIN node gpNode ON graphpart.nodeId = gpNode.id\n" +
+                " WHERE edge.nodeId IS NULL\n" +
+                ");";
+        try (Connection connection=DAO.getInstance().getConnection();
+             Statement statement=connection.createStatement();
+             ResultSet resultSet=statement.executeQuery(query)
+        ) {
+            methodResult=this.getGraphsFromStndQuery(resultSet);
+        } catch (SQLException throwables) {
             throwables.getMessage();
+        }
+        return methodResult;
+    }
+
+    private List<Graph> getGraphsFromStndQuery(ResultSet resultSet) throws SQLException {
+        List<Graph> methodResult=new ArrayList<>();
+
+        while (resultSet.next()) {
+
+            boolean directed=resultSet.getBoolean("graphDirected");
+            String graphName=resultSet.getString("graphName");
+            Date created=new java.util.Date(resultSet.getTimestamp("graphCreated").getTime());
+            int graphId=resultSet.getInt("graphId");
+
+            // dodawanie grafu
+            if (methodResult.stream().noneMatch(graph -> graph.getId() == graphId)) {
+                Graph graph=new Graph(graphName);
+                graph.setDirected(directed);
+                graph.setCreated(created);
+                graph.setId(graphId);
+                methodResult.add(graph);
+            }
+
+            int graphPartId=resultSet.getInt("graphPartId");
+            int edgeId=resultSet.getInt("edgeId");
+            double edgeWeight=resultSet.getDouble("edgeWeight");
+            int graphPartNodeId=resultSet.getInt("gpNodeId");
+            String gpNodeLabel=resultSet.getString("gpNodeLabel");
+            int edgeNodeId=resultSet.getInt("edgeNodeId"); //gdy bedzie null to domyślnie jest 0
+            String edgeNodeLabel=resultSet.getString("edgeNodeLabel");
+
+            //dodawanie graphPart do graph
+            methodResult.stream().filter(graph -> graph.getId() == graphId).findFirst().ifPresent(graph -> {
+                if (graph.getGraphParts().stream().noneMatch(graphPart -> graphPart.getId() == graphPartId)) {
+                    GraphPart graphPart=new GraphPart();
+                    graphPart.setId(graphPartId);
+                    graphPart.setGraphId(graphId);
+                    graph.getGraphParts().add(graphPart);
+                }
+
+                //dodawanie edge do graphPart
+                graph.getGraphParts().stream().filter(graphPart -> graphPart.getId() == graphPartId).findFirst().ifPresent(graphPart -> {
+                    if (graphPart.getEdges().stream().noneMatch(edge -> edge.getId() == edgeId) && edgeNodeId != 0) {
+                        Edge edge=new Edge();
+                        edge.setId(edgeId);
+                        edge.setWeight(edgeWeight);
+                        graphPart.getEdges().add(edge);
+                    }
+
+                    //dodawanie node do edge
+                    graphPart.getEdges().stream().filter(edge -> edge.getId() == edgeId).findFirst().ifPresent(edge -> {
+                        //ten node może się już znajdować w innym graphPart
+                        Node node=null;
+                        for (GraphPart graphPart1 : graph.getGraphParts()) {
+                            if (graphPart1.getNode() != null && graphPart1.getNode().getId() == edgeNodeId) {
+                                node=graphPart1.getNode();
+                            }
+                        }
+                        if (node == null) {
+                            node=new Node();
+                            node.setId(edgeNodeId);
+                            node.setLabel(edgeNodeLabel);
+                        }
+                        edge.setDestination(node);
+                    });
+
+                    //dodawanie node do graphPart
+                    if (graphPart.getNode() == null) {
+                        //ten node może się już znajdować w krawędzi innych graphPartów
+                        Node node=null;
+                        for (GraphPart graphPart1 : graph.getGraphParts()) {
+                            Optional<Edge> edgeWithCorrectNode=graphPart1.getEdges().stream().filter(edge -> {
+                                if (edge.getDestination() != null) {
+                                    return edge.getDestination().getId() == graphPartNodeId;
+                                }
+                                return false;
+                            }).findFirst();
+                            if (edgeWithCorrectNode.isPresent()) {
+                                node=edgeWithCorrectNode.get().getDestination();
+                            }
+                            if (node == null) {
+                                node=new Node();
+                                node.setId(graphPartNodeId);
+                                node.setLabel(gpNodeLabel);
+                            }
+                            graphPart.setNode(node); //można tak bo java do listy dodaje referencje do obiektu
+                        }
+                    }
+                });
+            });
         }
         return methodResult;
     }

@@ -1,7 +1,5 @@
 package GraphApp.model.entities;
 
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
@@ -9,19 +7,19 @@ public class Node {
 
     private int id;
     //label jest unikalny w obrębie grafu
-    private StringProperty label;
+    private final StringProperty label;
 
     public Node(String label) {
-        this.label = new SimpleStringProperty(label);
+        this.label=new SimpleStringProperty(label);
     }
 
     public Node(int id, String label) {
-        this.id= id;
-        this.label= new SimpleStringProperty(label);
+        this.id=id;
+        this.label=new SimpleStringProperty(label);
     }
 
     public Node() {
-        this.label = new SimpleStringProperty();
+        this.label=new SimpleStringProperty();
     }
 
     public int getId() {
@@ -36,12 +34,12 @@ public class Node {
         return label.get();
     }
 
-    public StringProperty labelProperty() {
-        return label;
-    }
-
     public void setLabel(String label) {
         this.label.set(label);
+    }
+
+    public StringProperty labelProperty() {
+        return label;
     }
 
     @Override

@@ -11,7 +11,7 @@ public class MainController {
     private GraphUtils graphUtils;
 
     public MainController(GraphModel graphModel) {
-        this.graphModel = graphModel;
+        this.graphModel=graphModel;
     }
 
 
