@@ -2,7 +2,13 @@ package GraphApp.controllers;
 
 import GraphApp.GraphUtils;
 import GraphApp.model.GraphModel;
+import GraphApp.model.entities.Edge;
+import GraphApp.model.entities.GraphPart;
+import com.brunomnsilva.smartgraph.graph.Digraph;
+import com.brunomnsilva.smartgraph.graph.Graph;
 import com.brunomnsilva.smartgraph.graph.GraphEdgeList;
+
+import java.util.Optional;
 
 public class MainController {
 
@@ -12,6 +18,27 @@ public class MainController {
 
     public MainController(GraphModel graphModel) {
         this.graphModel=graphModel;
+    }
+
+    public Optional<Graph<String, String>> getGraphView(int id) {
+        Optional<GraphApp.model.entities.Graph> optionalGraph=graphModel.getGraph(id);
+        if (optionalGraph.isEmpty()) return Optional.empty();
+        Graph<String, String> result = new GraphEdgeList<>();
+        GraphApp.model.entities.Graph graph = optionalGraph.get();
+
+        for(GraphPart graphPart : graph.getGraphParts()) {
+            result.insertVertex(graphPart.getNode().getLabel());
+        }
+        for(GraphPart graphPart : graph.getGraphParts()) {
+            for(Edge edge : graphPart.getEdges()) {
+                result.insertEdge(graphPart.getNode().getLabel(), edge.getDestination().getLabel(), String.valueOf(edge.getWeight()));
+            }
+        }
+        return Optional.of(result);
+    }
+
+    public Digraph<String, String> getDirectedGraphView(int id) {
+        return null;
     }
 
 
@@ -45,7 +72,6 @@ public class MainController {
         g.insertEdge("H", "K", "9");
         g.insertEdge("H", "L", "10");
         g.insertEdge("H", "M", "11");
-        g.insertEdge("H", "N", "12");
 
         g.insertEdge("A", "H", "0");
         return g;

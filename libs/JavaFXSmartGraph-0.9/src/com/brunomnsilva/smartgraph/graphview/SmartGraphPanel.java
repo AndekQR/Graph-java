@@ -831,6 +831,10 @@ public class SmartGraphPanel<V, E> extends Pane {
     private Collection<Vertex<V>> unplottedVertices() {
         List<Vertex<V>> unplotted = new LinkedList<>();
 
+        if(theGraph.vertices().isEmpty()) {
+            System.out.println("graph empty");
+        }
+
         for (Vertex<V> v : theGraph.vertices()) {
             if (!vertexNodes.containsKey(v)) {
                 unplotted.add(v);
