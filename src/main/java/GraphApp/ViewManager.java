@@ -1,39 +1,37 @@
 package GraphApp;
 
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Scene;
-import javafx.scene.layout.AnchorPane;
-import javafx.stage.Stage;
+import GraphApp.controllers.MainController;
+import GraphApp.model.GraphModel;
+import GraphApp.model.entities.Graph;
+import GraphApp.model.entities.Node;
+import GraphApp.view.MainView;
 
-import java.io.IOException;
+import java.util.List;
 
 public class ViewManager {
 
-    private static final String MAIN_PANEL="/panels/mainPanel.fxml";
-
-    private final Stage stage;
-
-    public ViewManager(Stage primaryStage) {
-        this.stage=primaryStage;
-    }
-
     public void showMainPanel() {
-        FXMLLoader fxmlLoader=this.getLoader(MAIN_PANEL);
+        GraphModel graphModel = new GraphModel();
+
+        GraphUtils graphUtils = new GraphUtils();
+        Graph graph = graphUtils.newGraph(true, "testowy");
+        Node nodeA=null, nodeB=null, nodeC=null;
         try {
-            AnchorPane root=fxmlLoader.load();
-            Scene scene=new Scene(root, 300, 300);
-            stage.setTitle("Hello World");
-            stage.setScene(scene);
-            stage.show();
-        } catch (IOException e) {
-            System.out.println("load error: " + e.getMessage());
+            nodeA = graphUtils.addNode(graph, "A");
+            nodeB = graphUtils.addNode(graph, "B");
+            nodeC = graphUtils.addNode(graph, "C");
+
+            graphUtils.addEdge(nodeA, nodeB, graph, 10D);
+            graphUtils.addEdge(nodeA, nodeC, graph, 5D);
+            graphUtils.addEdge(nodeC, nodeA, graph, 15D);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
         }
+//        graphModel.saveGraph(graph);
 
-    }
+        List<Graph> graphs = graphModel.getAllGraphs();
 
-    private FXMLLoader getLoader(String fxmlPath) {
-        FXMLLoader loader;
-        loader=new FXMLLoader(this.getClass().getResource(fxmlPath));
-        return loader;
+        MainController mainController=new MainController(graphModel);
+        new MainView(mainController, graphModel);
     }
 }
