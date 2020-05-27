@@ -4,7 +4,11 @@ import GraphApp.model.entities.Edge;
 import GraphApp.model.entities.Graph;
 import GraphApp.model.entities.GraphPart;
 import GraphApp.model.entities.Node;
+import com.github.javafaker.Faker;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 public class GraphUtils {
@@ -19,14 +23,14 @@ public class GraphUtils {
         return graph;
     }
 
-    public Node addNode(Graph graph, String label) throws Exception {
+    public Optional<Node> addNode(Graph graph, String label) throws Exception {
         if (this.isLabelGood(graph, label)) {
             Node node=new Node(label);
             GraphPart graphPart=new GraphPart(node);
             graph.getGraphParts().add(graphPart);
-            return node;
+            return Optional.of(node);
         } else {
-            throw new Exception("Label alread in graph");
+            return Optional.empty();
         }
     }
 
@@ -97,5 +101,33 @@ public class GraphUtils {
                 x.getEdges().removeIf(e -> e.getDestination().getLabel().equals(destination.getLabel()));
             }
         });
+    }
+
+    public Graph getRandomGraph(int vertices, boolean directed, String name) throws Exception {
+        Faker faker = new Faker();
+        Graph result = this.newGraph(directed, name);
+        List<Node> createdNodes = new ArrayList<>();
+        List<Integer> createdWeights = new ArrayList<>();
+        for (int i=0; i < vertices; i++) {
+            this.addNode(result, faker.name().firstName()).ifPresent(createdNodes::add);
+        }
+        createdNodes.forEach(node -> {
+            for (int i=0; i < faker.number().numberBetween(1,3); i++) {
+                Node dest = createdNodes.get(faker.number().numberBetween(1, createdNodes.size()));
+                try {
+                    if(this.getEdge(node, dest, result).isEmpty()){
+                        Integer weight =faker.number().numberBetween(1, vertices*2);
+                        while (createdWeights.contains(weight)) {
+                            weight =faker.number().numberBetween(1, vertices*2);
+                        }
+                        createdWeights.add(weight);
+                        this.addEdge(node, dest, result, weight.doubleValue());
+                    }
+                } catch (Exception e) {
+                    System.out.println(e.getMessage());
+                }
+            }
+        });
+        return result;
     }
 }

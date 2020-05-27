@@ -7,6 +7,8 @@ import GraphApp.model.entities.GraphPart;
 import com.brunomnsilva.smartgraph.graph.Digraph;
 import com.brunomnsilva.smartgraph.graph.Graph;
 import com.brunomnsilva.smartgraph.graph.GraphEdgeList;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 import java.util.Optional;
 
@@ -16,15 +18,23 @@ public class MainController {
     private final GraphModel graphModel;
     private GraphUtils graphUtils;
 
+    // nie może zostać przypisana inna lista bo graphVisualization gubi referencje
+    private final ObservableList<GraphApp.model.entities.Graph> graphsList;
+
     public MainController(GraphModel graphModel) {
         this.graphModel=graphModel;
+        this.graphsList =FXCollections.observableArrayList(graphModel.getAllGraphs());
+        this.graphUtils = new GraphUtils();
     }
 
     public Optional<Graph<String, String>> getGraphView(int id) {
         Optional<GraphApp.model.entities.Graph> optionalGraph=graphModel.getGraph(id);
         if (optionalGraph.isEmpty()) return Optional.empty();
+        return Optional.of(this.convertToGraphView(optionalGraph.get()));
+    }
+
+    public Graph<String, String> convertToGraphView(GraphApp.model.entities.Graph graph) {
         Graph<String, String> result = new GraphEdgeList<>();
-        GraphApp.model.entities.Graph graph = optionalGraph.get();
 
         for(GraphPart graphPart : graph.getGraphParts()) {
             result.insertVertex(graphPart.getNode().getLabel());
@@ -34,46 +44,48 @@ public class MainController {
                 result.insertEdge(graphPart.getNode().getLabel(), edge.getDestination().getLabel(), String.valueOf(edge.getWeight()));
             }
         }
-        return Optional.of(result);
+        return result;
     }
 
     public Digraph<String, String> getDirectedGraphView(int id) {
         return null;
     }
 
+    public ObservableList<GraphApp.model.entities.Graph> getGraphsList() {
+        return graphsList;
+    }
 
-    public com.brunomnsilva.smartgraph.graph.Graph<String, String> getGraph(com.brunomnsilva.smartgraph.graph.Graph<String, String> g) {
-        g=new GraphEdgeList<>();
-        g.insertVertex("A");
-        g.insertVertex("B");
-        g.insertVertex("C");
-        g.insertVertex("D");
-        g.insertVertex("E");
-        g.insertVertex("F");
-        g.insertVertex("G");
+    public Optional<GraphApp.model.entities.Graph> addRandomGraph(int vertices, boolean directed, String graphname) {
+        GraphApp.model.entities.Graph randomGraph = null;
+        try {
+            randomGraph=this.graphUtils.getRandomGraph(vertices, directed, graphname);
+            GraphApp.model.entities.Graph graph=this.graphModel.saveGraph(randomGraph);
+            this.graphsList.add(graph);
+            return Optional.of(graph);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return Optional.empty();
+    }
 
-        g.insertEdge("A", "B", "1");
-        g.insertEdge("A", "C", "2");
-        g.insertEdge("A", "D", "3");
-        g.insertEdge("A", "E", "4");
-        g.insertEdge("A", "F", "5");
-        g.insertEdge("A", "G", "6");
+    public Graph<String, String> getRandomGraphView(int vertices, boolean directed, String graphname) {
+        Graph<String, String> result = new GraphEdgeList<>();
+        try {
+            GraphApp.model.entities.Graph random=this.graphUtils.getRandomGraph(vertices, directed, graphname);
 
-        g.insertVertex("H");
-        g.insertVertex("I");
-        g.insertVertex("J");
-        g.insertVertex("K");
-        g.insertVertex("L");
-        g.insertVertex("M");
-        g.insertVertex("N");
-
-        g.insertEdge("H", "I", "7");
-        g.insertEdge("H", "J", "8");
-        g.insertEdge("H", "K", "9");
-        g.insertEdge("H", "L", "10");
-        g.insertEdge("H", "M", "11");
-
-        g.insertEdge("A", "H", "0");
-        return g;
+            System.out.println("get random graph vertices: "+random.getGraphParts().size());
+            for(GraphPart graphPart : random.getGraphParts()) {
+                result.insertVertex(graphPart.getNode().getLabel());
+            }
+            System.out.println("result vertices: "+result.vertices().size());
+            for(GraphPart graphPart : random.getGraphParts()) {
+                for(Edge edge : graphPart.getEdges()) {
+                    result.insertEdge(graphPart.getNode().getLabel(), edge.getDestination().getLabel(), String.valueOf(edge.getWeight()));
+                }
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return result;
     }
 }

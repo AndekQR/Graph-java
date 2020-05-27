@@ -3,44 +3,37 @@ package GraphApp.view;
 import GraphApp.controllers.MainController;
 import GraphApp.model.GraphModel;
 import GraphApp.model.entities.Graph;
-import com.brunomnsilva.smartgraph.graph.DigraphEdgeList;
 import com.brunomnsilva.smartgraph.graph.GraphEdgeList;
 import com.brunomnsilva.smartgraph.graphview.SmartCircularSortedPlacementStrategy;
 import com.brunomnsilva.smartgraph.graphview.SmartGraphPanel;
 import com.brunomnsilva.smartgraph.graphview.SmartPlacementStrategy;
-import com.brunomnsilva.smartgraph.graphview.SmartRandomPlacementStrategy;
-import javafx.application.Platform;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class MainView {
 
-    private static final int HEIGHT=600;
-    private static final int WIDTH=800;
-    private static final int CONTROL_PANEL_HEIGHT=30;
+    private static final int HEIGHT=768;
+    private static final int WIDTH=1024;
+    private static final int CONTROL_PANEL_HEIGHT=150;
     private static final int LIST_VIEW_WIDTH=150;
 
     private final MainController mainController;
-    private final boolean initialized=false;
     private final GraphModel graphModel;
 
     private BorderPane container;
     private ListView<Graph> graphListView;
-    private ObservableList<Graph> graphsList;
     private com.brunomnsilva.smartgraph.graph.Graph<String, String> graphVisualization;
     private HBox controlPane;
     private SmartGraphPanel<String, String> graphView;
@@ -48,18 +41,17 @@ public class MainView {
     public MainView(MainController mainController, GraphModel graphModel) {
         this.mainController=mainController;
         this.graphModel=graphModel;
-        this.graphsList=FXCollections.observableArrayList();
-        if (!initialized) initialize();
+        initialize();
     }
 
     private void initialize() {
         this.container=new BorderPane();
-        container.setPrefSize(WIDTH, HEIGHT);
-        this.initControlPanel();
-        container.setBottom(this.controlPane);
-        container.setLeft(this.initGraphView());
-        this.initListView();
-        container.setRight(this.graphListView);
+        this.container.setPrefSize(WIDTH, HEIGHT);
+        initListView();
+        initControlPanel();
+        this.container.setLeft(this.graphListView);
+        this.container.setBottom(this.controlPane);
+        this.container.setRight(initGraphView());
 
         Scene scene=new Scene(this.container);
         Stage stage=new Stage(StageStyle.DECORATED);
@@ -68,19 +60,9 @@ public class MainView {
 
         stage.show();
         this.graphView.init();
-        List<Graph> allGraphs=graphModel.getAllGraphs();
-        this.graphsList.setAll(allGraphs);
-        Optional<Graph> first=allGraphs.stream().findFirst();
-        first.ifPresent(graph -> {
-            Optional<com.brunomnsilva.smartgraph.graph.Graph<String, String>> graphView=this.mainController.getGraphView(first.get().getId());
-            graphView.ifPresent(stringStringGraph -> {
-                this.changeGraphVisualization(stringStringGraph);
-                this.graphView.update();
-            });
-        });
+        this.graphView.update();
     }
 
-    // nie można po prostu przypisać bo graphView gubi referencje do grafu
     private void changeGraphVisualization(com.brunomnsilva.smartgraph.graph.Graph<String, String> newVisualization) {
         this.graphVisualization.edges().forEach(stringStringEdge -> {
             this.graphVisualization.removeEdge(stringStringEdge);
@@ -97,11 +79,13 @@ public class MainView {
     }
 
     private void initListView() {
-        this.graphListView=new ListView<>(this.graphsList);
+        this.graphListView=new ListView<>(mainController.getGraphsList());
         this.graphListView.setPrefWidth(LIST_VIEW_WIDTH);
+
+        //określenie sposobu wyświetlania grafów na liście i akcji po naciśnięciu na element
         ExecutorService executorService=Executors.newCachedThreadPool();
         this.graphListView.setCellFactory(graphListView1 -> {
-            ListCell<Graph> cell = new ListCell<>(){
+            ListCell<Graph> cell=new ListCell<>() {
                 @Override
                 protected void updateItem(Graph item, boolean empty) {
                     super.updateItem(item, empty);
@@ -111,10 +95,10 @@ public class MainView {
             };
             cell.setOnMouseClicked(mouseEvent -> {
                 executorService.submit(() -> {
-                    if(cell.getItem() != null) {
+                    if (cell.getItem() != null) {
                         Optional<com.brunomnsilva.smartgraph.graph.Graph<String, String>> graphView=mainController.getGraphView(cell.getItem().getId());
                         graphView.ifPresent(stringStringGraph -> {
-                            try{
+                            try {
                                 this.changeGraphVisualization(stringStringGraph);
                                 this.graphView.update();
                             } catch (Exception e) {
@@ -128,25 +112,41 @@ public class MainView {
         });
     }
 
-    private HBox initGraphView() {
-        HBox hBox=new HBox();
-        VBox vBox=new VBox();
-        hBox.getChildren().add(vBox);
-        hBox.setAlignment(Pos.CENTER);
-        vBox.setAlignment(Pos.CENTER);
+    private ScrollPane initGraphView() {
+
 
         this.graphVisualization=new GraphEdgeList<>();
-        SmartPlacementStrategy strategy=new SmartRandomPlacementStrategy();
+        SmartPlacementStrategy strategy=new SmartCircularSortedPlacementStrategy();
         this.graphView=new SmartGraphPanel<>(this.graphVisualization, strategy);
-        this.graphView.prefWidthProperty().bind(this.container.widthProperty().subtract(LIST_VIEW_WIDTH));
-        this.graphView.prefHeightProperty().bind(this.container.heightProperty().subtract(this.controlPane.heightProperty()));
-        vBox.getChildren().add(this.graphView);
-        return hBox;
+        this.graphView.setAutomaticLayout(true);
+
+        StackPane stackPane=new StackPane();
+        stackPane.setPrefSize(WIDTH * 2, HEIGHT * 2);
+        stackPane.getChildren().add(this.graphView);
+
+        ZoomableScrollPane scrollPane=new ZoomableScrollPane(stackPane);
+        scrollPane.prefWidthProperty().bind(this.container.widthProperty().subtract(LIST_VIEW_WIDTH));
+        scrollPane.prefHeightProperty().bind(this.container.heightProperty().subtract(CONTROL_PANEL_HEIGHT));
+
+
+        Optional<Graph> first=mainController.getGraphsList().stream().findFirst();
+        first.ifPresent(graph -> {
+            com.brunomnsilva.smartgraph.graph.Graph<String, String> randomGraph= mainController.convertToGraphView(first.get());
+            this.changeGraphVisualization(randomGraph);
+        });
+
+        return scrollPane;
     }
 
     private void initControlPanel() {
         HBox hBox=new HBox();
-        hBox.setPrefSize(this.container.getWidth(), CONTROL_PANEL_HEIGHT);
+        hBox.setStyle("-fx-background-color: #f3f3f3");
+        Button button=new Button("Add random graph");
+        button.setOnMouseClicked(mouseEvent -> new NewGraphWindow(mainController::addRandomGraph));
+        Button button1=new Button("random button 1");
+        hBox.getChildren().add(button);
+        hBox.getChildren().add(button1);
+        hBox.setPrefSize(WIDTH, CONTROL_PANEL_HEIGHT);
         this.controlPane=hBox;
     }
 }

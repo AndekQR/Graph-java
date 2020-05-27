@@ -27,8 +27,8 @@ public class GraphUtilsTest {
     @Test
     public void addNodeTest() throws Exception {
         Graph graph = graphUtils.newGraph(true, "test");
-        Node nodeA = graphUtils.addNode(graph, "nodeA");
-        Node nodeB = graphUtils.addNode(graph, "nodeB");
+        Node nodeA = graphUtils.addNode(graph, "nodeA").get();
+        Node nodeB = graphUtils.addNode(graph, "nodeB").get();
 
         assertEquals(2, graph.getGraphParts().size());
         graph.getGraphParts().forEach(graphPart -> {
@@ -42,9 +42,9 @@ public class GraphUtilsTest {
     @Test
     public void addEdgeTest() throws Exception {
         Graph graph = graphUtils.newGraph(true, "test");
-        Node nodeA = graphUtils.addNode(graph, "nodeA");
-        Node nodeB = graphUtils.addNode(graph, "nodeB");
-        Node nodeC = graphUtils.addNode(graph, "nodeC");
+        Node nodeA = graphUtils.addNode(graph, "nodeA").get();
+        Node nodeB = graphUtils.addNode(graph, "nodeB").get();
+        Node nodeC = graphUtils.addNode(graph, "nodeC").get();
 
         graphUtils.addEdge(nodeA, nodeB, graph, 10D);
         GraphPart graphPart = graph.getGraphParts().stream().filter(x -> x.getNode().getLabel().equals(nodeA.getLabel()))
@@ -76,9 +76,9 @@ public class GraphUtilsTest {
     @Test
     public void getEdgeTest() throws Exception {
         Graph graph = graphUtils.newGraph(true, "test");
-        Node nodeA = graphUtils.addNode(graph, "nodeA");
-        Node nodeB = graphUtils.addNode(graph, "nodeB");
-        Node nodeC = graphUtils.addNode(graph, "nodeC");
+        Node nodeA = graphUtils.addNode(graph, "nodeA").get();
+        Node nodeB = graphUtils.addNode(graph, "nodeB").get();
+        Node nodeC = graphUtils.addNode(graph, "nodeC").get();
 
         graphUtils.addEdge(nodeA, nodeB, graph, 5D);
         Edge edge = graphUtils.getEdge(nodeA, nodeB, graph).orElse(null);
@@ -91,8 +91,8 @@ public class GraphUtilsTest {
     @Test
     public void removeEdgeTest() throws Exception {
         Graph graph = graphUtils.newGraph(true, "test");
-        Node nodeA = graphUtils.addNode(graph, "nodeA");
-        Node nodeB = graphUtils.addNode(graph, "nodeB");
+        Node nodeA = graphUtils.addNode(graph, "nodeA").get();
+        Node nodeB = graphUtils.addNode(graph, "nodeB").get();
         graphUtils.addEdge(nodeA, nodeB, graph, 5D);
 
         GraphPart graphPart = graph.getGraphParts().stream().filter(x -> x.getNode().getLabel().equals(nodeA.getLabel()))
