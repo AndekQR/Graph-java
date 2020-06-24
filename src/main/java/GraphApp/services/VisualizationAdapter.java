@@ -22,7 +22,7 @@ public class VisualizationAdapter {
     }
 
     public Graph<String, String> getRandomGraphView(int vertices, boolean directed, String graphname) {
-        GraphUtils graphUtils = new GraphUtils();
+        GraphUtils graphUtils=new GraphUtils();
         Graph<String, String> result=new GraphEdgeList<>();
         try {
             GraphApp.model.entities.Graph random=graphUtils.getRandomGraph(vertices, directed, graphname);

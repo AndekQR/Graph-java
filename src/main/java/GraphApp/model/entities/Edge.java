@@ -5,9 +5,9 @@ import javafx.beans.property.SimpleDoubleProperty;
 
 public class Edge {
 
+    private final DoubleProperty weight;
     private int id;
     private Node destination;
-    private final DoubleProperty weight;
     private int graphPartId;
 
     public Edge(Node destination, Double weight) {

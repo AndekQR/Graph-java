@@ -5,9 +5,9 @@ import javafx.beans.property.StringProperty;
 
 public class Node {
 
-    private int id;
     //label jest unikalny w obrębie grafu
     private final StringProperty label;
+    private int id;
 
     public Node(String label) {
         this.label=new SimpleStringProperty(label);

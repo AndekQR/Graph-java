@@ -6,8 +6,8 @@ import GraphApp.model.entities.GraphPart;
 import GraphApp.model.entities.Node;
 
 import java.sql.*;
-import java.util.*;
 import java.util.Date;
+import java.util.*;
 
 public class GraphModel implements GraphModelInterface {
 
@@ -48,7 +48,7 @@ public class GraphModel implements GraphModelInterface {
             return graph;
 
         } catch (SQLException throwables) {
-            System.out.println("Błąd bazy danych: "+throwables.getMessage());
+            System.out.println("Błąd bazy danych: " + throwables.getMessage());
         }
         return graph;
     }
@@ -182,7 +182,7 @@ public class GraphModel implements GraphModelInterface {
                 }
             }
         } catch (SQLException throwables) {
-            System.out.println("Błąd bazy danych: "+throwables.getMessage());
+            System.out.println("Błąd bazy danych: " + throwables.getMessage());
         }
         return Optional.empty();
     }
@@ -215,7 +215,7 @@ public class GraphModel implements GraphModelInterface {
         ) {
             methodResult=this.getGraphsFromStndQuery(resultSet);
         } catch (SQLException throwables) {
-            System.out.println("Błąd bazy danych: "+throwables.getMessage());
+            System.out.println("Błąd bazy danych: " + throwables.getMessage());
         }
         return methodResult;
     }
@@ -312,10 +312,10 @@ public class GraphModel implements GraphModelInterface {
 
     @Override
     public Graph deleteGraph(Graph graph) {
-        String sql = "DELETE FROM graph where id=(?)";
-        Set<Node> nodes = new HashSet<>();
-        try(Connection connection = DAO.getInstance().getConnection();
-        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        String sql="DELETE FROM graph where id=(?)";
+        Set<Node> nodes=new HashSet<>();
+        try (Connection connection=DAO.getInstance().getConnection();
+             PreparedStatement preparedStatement=connection.prepareStatement(sql)
         ) {
             preparedStatement.setInt(1, graph.getId());
             preparedStatement.executeUpdate();
@@ -324,8 +324,8 @@ public class GraphModel implements GraphModelInterface {
                 nodes.add(graphPart.getNode());
             });
             nodes.forEach(node -> this.deleteNode(node.getId(), connection));
-        }catch (SQLException e) {
-            System.out.println("Błąd bazy danych: "+e.getMessage());
+        } catch (SQLException e) {
+            System.out.println("Błąd bazy danych: " + e.getMessage());
         }
         return graph;
     }

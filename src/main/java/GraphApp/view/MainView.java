@@ -38,7 +38,7 @@ public class MainView {
 
     private final MainController mainController;
     private final GraphModelInterface graphModel;
-
+    private final ExecutorService executorService;
     private BorderPane container;
     private ListView<Graph> graphListView;
     private com.brunomnsilva.smartgraph.graph.Graph<String, String> graphVisualization;
@@ -46,15 +46,13 @@ public class MainView {
     private FlowPane graphInformation;
     private VBox allBottom;
     private SmartGraphPanel<String, String> graphView;
-    private List<String> colorizedEdges;
-
-    private final ExecutorService executorService;
+    private final List<String> colorizedEdges;
 
     public MainView(MainController mainController, GraphModelInterface graphModel) {
         this.mainController=mainController;
         this.graphModel=graphModel;
-        this.executorService = Executors.newCachedThreadPool();
-        colorizedEdges = new ArrayList<>();
+        this.executorService=Executors.newCachedThreadPool();
+        colorizedEdges=new ArrayList<>();
         initialize();
     }
 
@@ -64,7 +62,7 @@ public class MainView {
         initGraphInformationPanel();
         initListView();
         initControlPanel();
-        allBottom = new VBox();
+        allBottom=new VBox();
         allBottom.getChildren().addAll(this.controlPane, this.graphInformation);
         this.container.setLeft(this.graphListView);
         this.container.setBottom(allBottom);
@@ -117,10 +115,10 @@ public class MainView {
                 this.executorService.submit(() -> {
 
                     if ((cell.getItem() != null)) {
-                        Optional<Graph> graph = mainController.getGraph(cell.getItem().getId());
+                        Optional<Graph> graph=mainController.getGraph(cell.getItem().getId());
                         graph.ifPresent(stringStringGraph -> {
                             try {
-                                com.brunomnsilva.smartgraph.graph.Graph<String, String> graphView = mainController.convertGraphToVisualization(stringStringGraph);
+                                com.brunomnsilva.smartgraph.graph.Graph<String, String> graphView=mainController.convertGraphToVisualization(stringStringGraph);
                                 this.changeGraphVisualization(graphView);
                                 Platform.runLater(() -> this.changeGraphInformation(stringStringGraph));
                                 this.graphView.update();
@@ -144,46 +142,46 @@ public class MainView {
     }
 
     private HBox getNumberOfVerticesHbox(Graph graph) {
-        HBox hBox = new HBox();
-        Text text = new Text();
-        text.setText("Number of vertices: "+graph.getGraphParts().size());
+        HBox hBox=new HBox();
+        Text text=new Text();
+        text.setText("Number of vertices: " + graph.getGraphParts().size());
         hBox.getChildren().add(text);
         return hBox;
     }
 
     private HBox getNumberOfEdgesHbox(Graph graph) {
-        HBox hBox = new HBox();
-        int numberOfEdges = 0;
+        HBox hBox=new HBox();
+        int numberOfEdges=0;
         for (GraphPart graphPart : graph.getGraphParts()) {
             for (Edge ignored : graphPart.getEdges()) {
                 numberOfEdges++;
             }
         }
-        Text text = new Text("Number of edges: "+numberOfEdges);
+        Text text=new Text("Number of edges: " + numberOfEdges);
         hBox.getChildren().add(text);
         return hBox;
     }
 
     private VBox getMinimalRoadFromAToBHBox(Graph graph) {
-        HBox hBox = new HBox();
-        Text text = new Text("Set the minimum road from A to B node ");
-        TextField node_a = new TextField("node A");
-        TextField node_b = new TextField("node B");
-        Button button = new Button("Calculate");
+        HBox hBox=new HBox();
+        Text text=new Text("Set the minimum road from A to B node ");
+        TextField node_a=new TextField("node A");
+        TextField node_b=new TextField("node B");
+        Button button=new Button("Calculate");
         hBox.getChildren().addAll(text, node_a, node_b, button);
-        HBox bottomHbox = new HBox();
-        Text roadWeightText = new Text();
+        HBox bottomHbox=new HBox();
+        Text roadWeightText=new Text();
         bottomHbox.getChildren().add(roadWeightText);
 
-        VBox vBox = new VBox();
+        VBox vBox=new VBox();
         button.setOnMouseClicked(mouseEvent -> {
             Optional<Node> nodea=mainController.findNodeByName(graph, node_a.getText());
             Optional<Node> nodeb=mainController.findNodeByName(graph, node_b.getText());
-            if(nodea.isPresent() && nodeb.isPresent()){
-                DijkstraAlgorythm dijkstraAlgorythm = new DijkstraAlgorythm(graph, nodea.get());
+            if (nodea.isPresent() && nodeb.isPresent()) {
+                DijkstraAlgorythm dijkstraAlgorythm=new DijkstraAlgorythm(graph, nodea.get());
                 Optional<Double> roadWeightToNode=dijkstraAlgorythm.getRoadWeightToNode(nodeb.get());
-                if (roadWeightToNode.isPresent()){
-                    roadWeightText.setText("Road weight: "+ roadWeightToNode.get());
+                if (roadWeightToNode.isPresent()) {
+                    roadWeightText.setText("Road weight: " + roadWeightToNode.get());
                     this.makePathInTheVisualization(dijkstraAlgorythm.getNodesInTheRouteTo(nodeb.get()));
                 } else {
                     roadWeightText.setText("No path!");
@@ -199,10 +197,10 @@ public class MainView {
     private void makePathInTheVisualization(List<Node> nodes) {
         deletePath();
         Collection<com.brunomnsilva.smartgraph.graph.Edge<String, String>> edges=graphVisualization.edges();
-        if (nodes.size() > 1){
-            int j = 1;
+        if (nodes.size() > 1) {
+            int j=1;
             for (int i=0; i < nodes.size(); i++) {
-                if (j < nodes.size()){
+                if (j < nodes.size()) {
                     Optional<com.brunomnsilva.smartgraph.graph.Edge<String, String>> indexOfEdgeFromVisualization=this.getIndexOfEdgeFromVisualization(edges, nodes.get(i), nodes.get(j));
                     indexOfEdgeFromVisualization.ifPresent(stringStringEdge -> {
                         this.graphView.getStylableEdge(stringStringEdge.element()).setStyle("-fx-stroke: #d90000");
@@ -224,8 +222,8 @@ public class MainView {
         this.colorizedEdges.clear();
     }
 
-    private Optional<com.brunomnsilva.smartgraph.graph.Edge<String, String>> getIndexOfEdgeFromVisualization(Collection<com.brunomnsilva.smartgraph.graph.Edge<String, String>> edges, Node a, Node b){
-        List<com.brunomnsilva.smartgraph.graph.Edge<String, String>> edgelist = new ArrayList<>(edges);
+    private Optional<com.brunomnsilva.smartgraph.graph.Edge<String, String>> getIndexOfEdgeFromVisualization(Collection<com.brunomnsilva.smartgraph.graph.Edge<String, String>> edges, Node a, Node b) {
+        List<com.brunomnsilva.smartgraph.graph.Edge<String, String>> edgelist=new ArrayList<>(edges);
         return edgelist.stream()
                 .filter(edge -> edge.vertices()[0].element().equals(a.getLabel()) && edge.vertices()[1].element().equals(b.getLabel())).findFirst();
     }
@@ -256,7 +254,7 @@ public class MainView {
     }
 
     private void initGraphInformationPanel() {
-        this.graphInformation = new FlowPane();
+        this.graphInformation=new FlowPane();
         this.graphInformation.setPrefSize(WIDTH, GRAPH_INFORMATION_HEIGHT);
         graphInformation.setStyle("-fx-background-color: #fcfbfb");
         graphInformation.setOrientation(Orientation.VERTICAL);
@@ -279,7 +277,7 @@ public class MainView {
 
         });
 
-        Button exit = new Button("Exit");
+        Button exit=new Button("Exit");
         exit.setOnMouseClicked(mouseEvent -> {
             this.executorService.shutdownNow();
             Platform.exit();

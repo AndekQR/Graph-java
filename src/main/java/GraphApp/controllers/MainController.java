@@ -1,10 +1,9 @@
 package GraphApp.controllers;
 
+import GraphApp.model.GraphModelInterface;
 import GraphApp.model.entities.Node;
 import GraphApp.services.GraphUtils;
-import GraphApp.model.GraphModelInterface;
 import GraphApp.services.VisualizationAdapter;
-import com.brunomnsilva.smartgraph.graph.Digraph;
 import com.brunomnsilva.smartgraph.graph.Graph;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -32,7 +31,7 @@ public class MainController {
     }
 
     public Graph<String, String> convertGraphToVisualization(GraphApp.model.entities.Graph graph) {
-        VisualizationAdapter visualizationAdapter = new VisualizationAdapter();
+        VisualizationAdapter visualizationAdapter=new VisualizationAdapter();
         return visualizationAdapter.convertToGraphView(graph);
     }
 

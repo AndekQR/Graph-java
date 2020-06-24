@@ -7,7 +7,6 @@ import GraphApp.model.entities.Node;
 import com.github.javafaker.Faker;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -103,7 +102,7 @@ public class GraphUtils {
         });
     }
 
-    public Optional<Node> findNodeByName(Graph graph, String name){
+    public Optional<Node> findNodeByName(Graph graph, String name) {
         for (GraphPart graphPart : graph.getGraphParts()) {
             if (graphPart.getNode().getLabel().equals(name)) return Optional.of(graphPart.getNode());
         }
