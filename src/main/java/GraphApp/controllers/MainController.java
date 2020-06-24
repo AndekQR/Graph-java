@@ -2,6 +2,7 @@ package GraphApp.controllers;
 
 import GraphApp.model.GraphModelInterface;
 import GraphApp.model.entities.Node;
+import GraphApp.services.DijkstraAlgorythm;
 import GraphApp.services.GraphUtils;
 import GraphApp.services.VisualizationAdapter;
 import com.brunomnsilva.smartgraph.graph.Graph;
@@ -51,7 +52,7 @@ public class MainController {
             this.graphsList.add(graph);
             return Optional.of(graph);
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            System.out.println(e.getMessage() + "addRandomGraph");
         }
         return Optional.empty();
     }
@@ -64,5 +65,9 @@ public class MainController {
 
     public Optional<Node> findNodeByName(GraphApp.model.entities.Graph graph, String name) {
         return graphUtils.findNodeByName(graph, name);
+    }
+
+    public DijkstraAlgorythm initDijkstraAlgorythm(GraphApp.model.entities.Graph graph, Node startNode){
+        return new DijkstraAlgorythm(graph, startNode);
     }
 }

@@ -123,7 +123,7 @@ public class MainView {
                                 Platform.runLater(() -> this.changeGraphInformation(stringStringGraph));
                                 this.graphView.update();
                             } catch (Exception e) {
-                                System.out.println(e.getMessage());
+                                System.out.println(e.getMessage() + " initListView");
                             }
                         });
                     }
@@ -178,7 +178,7 @@ public class MainView {
             Optional<Node> nodea=mainController.findNodeByName(graph, node_a.getText());
             Optional<Node> nodeb=mainController.findNodeByName(graph, node_b.getText());
             if (nodea.isPresent() && nodeb.isPresent()) {
-                DijkstraAlgorythm dijkstraAlgorythm=new DijkstraAlgorythm(graph, nodea.get());
+                DijkstraAlgorythm dijkstraAlgorythm=this.mainController.initDijkstraAlgorythm(graph, nodea.get());
                 Optional<Double> roadWeightToNode=dijkstraAlgorythm.getRoadWeightToNode(nodeb.get());
                 if (roadWeightToNode.isPresent()) {
                     roadWeightText.setText("Road weight: " + roadWeightToNode.get());

@@ -104,7 +104,7 @@ public class GraphUtils {
 
     public Optional<Node> findNodeByName(Graph graph, String name) {
         for (GraphPart graphPart : graph.getGraphParts()) {
-            if (graphPart.getNode().getLabel().equals(name)) return Optional.of(graphPart.getNode());
+            if (graphPart.getNode().getLabel().toLowerCase().equals(name.toLowerCase())) return Optional.of(graphPart.getNode());
         }
         return Optional.empty();
     }
@@ -133,7 +133,7 @@ public class GraphUtils {
                             }
                         }
                     } catch (Exception e) {
-                        System.out.println(e.getMessage());
+                        System.out.println(e.getMessage() + "getRandomGraph");
                     }
                 }
         });
