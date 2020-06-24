@@ -1,4 +1,4 @@
-package GraphApp;
+package GraphApp.services;
 
 import GraphApp.model.entities.Edge;
 import GraphApp.model.entities.Graph;
@@ -7,8 +7,8 @@ import GraphApp.model.entities.Node;
 import com.github.javafaker.Faker;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 
 public class GraphUtils {
@@ -103,31 +103,43 @@ public class GraphUtils {
         });
     }
 
+    public Optional<Node> findNodeByName(Graph graph, String name){
+        for (GraphPart graphPart : graph.getGraphParts()) {
+            if (graphPart.getNode().getLabel().equals(name)) return Optional.of(graphPart.getNode());
+        }
+        return Optional.empty();
+    }
+
     public Graph getRandomGraph(int vertices, boolean directed, String name) throws Exception {
-        Faker faker = new Faker();
-        Graph result = this.newGraph(directed, name);
-        List<Node> createdNodes = new ArrayList<>();
-        List<Integer> createdWeights = new ArrayList<>();
+        Faker faker=new Faker();
+        Graph result=this.newGraph(directed, name);
+        List<Node> createdNodes=new ArrayList<>();
+        List<Integer> createdWeights=new ArrayList<>();
         for (int i=0; i < vertices; i++) {
             this.addNode(result, faker.name().firstName()).ifPresent(createdNodes::add);
         }
         createdNodes.forEach(node -> {
-            for (int i=0; i < faker.number().numberBetween(1,3); i++) {
-                Node dest = createdNodes.get(faker.number().numberBetween(1, createdNodes.size()));
-                try {
-                    if(this.getEdge(node, dest, result).isEmpty()){
-                        Integer weight =faker.number().numberBetween(1, vertices*2);
-                        while (createdWeights.contains(weight)) {
-                            weight =faker.number().numberBetween(1, vertices*2);
+            if (createdNodes.size() > 1)
+                for (int i=0; i < faker.number().numberBetween(1, 3); i++) {
+                    Node dest=createdNodes.get(faker.number().numberBetween(1, createdNodes.size()));
+                    try {
+                        if (this.getEdge(node, dest, result).isEmpty()) {
+                            Integer weight=faker.number().numberBetween(1, vertices * 2);
+                            while (createdWeights.contains(weight)) {
+                                weight=faker.number().numberBetween(1, vertices * 2);
+                            }
+                            createdWeights.add(weight);
+                            if (node != dest) {
+                                this.addEdge(node, dest, result, weight.doubleValue());
+                            }
                         }
-                        createdWeights.add(weight);
-                        this.addEdge(node, dest, result, weight.doubleValue());
+                    } catch (Exception e) {
+                        System.out.println(e.getMessage());
                     }
-                } catch (Exception e) {
-                    System.out.println(e.getMessage());
                 }
-            }
         });
         return result;
     }
+
+
 }

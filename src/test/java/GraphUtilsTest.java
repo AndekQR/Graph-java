@@ -1,6 +1,6 @@
 import org.junit.BeforeClass;
 import org.junit.Test;
-import GraphApp.GraphUtils;
+import GraphApp.services.GraphUtils;
 import GraphApp.model.entities.Edge;
 import GraphApp.model.entities.Graph;
 import GraphApp.model.entities.GraphPart;

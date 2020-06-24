@@ -1,8 +1,6 @@
 package GraphApp.view;
 
 import GraphApp.AddRandomGraphToDb;
-import GraphApp.controllers.MainController;
-import javafx.beans.value.ChangeListener;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -14,6 +12,7 @@ import javafx.stage.Stage;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.regex.Pattern;
 
 
 public class NewGraphWindow {
@@ -43,17 +42,20 @@ public class NewGraphWindow {
         TextField graphName=new TextField();
 
         vertices.textProperty().addListener((observableValue, oldValue, newValue) -> {
-            if(newValue.matches("\\d*")) {
-                this.vertices = Integer.parseInt(newValue);
+            Pattern pattern=Pattern.compile("\\d+");
+            if (pattern.matcher(newValue).matches()) {
+                this.vertices=Integer.parseInt(newValue);
+            } else {
+                vertices.setText(oldValue);
             }
         });
 
         directed.selectedProperty().addListener((observableValue, aBoolean, t1) -> {
-            this.directed = t1;
+            this.directed=t1;
         });
 
         graphName.textProperty().addListener((observableValue, s, t1) -> {
-            this.graphName = t1;
+            this.graphName=t1;
         });
 
         TilePane tilePane=new TilePane();
@@ -68,21 +70,23 @@ public class NewGraphWindow {
     private HBox getControls(AddRandomGraphToDb addRandomGraphToDb, Stage stage) {
         Button okButton=new Button("OK");
         Button cancelButton=new Button("Cancel");
-        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        ExecutorService executorService=Executors.newSingleThreadExecutor();
 
         okButton.setOnAction(actionEvent -> {
-            if (this.graphName != null && !this.graphName.isEmpty() && this.vertices != 0) {
+            if (this.graphName != null && !this.graphName.isEmpty() && this.vertices > 0) {
                 executorService.submit(() -> {
                     addRandomGraphToDb.addToDB(this.vertices, this.directed, this.graphName);
                 });
+                executorService.shutdown();
                 stage.close();
             } else {
-                Alert alert = new Alert(AlertType.ERROR, "Error in form", ButtonType.OK);
+                Alert alert=new Alert(AlertType.ERROR, "Error in form", ButtonType.OK);
                 alert.showAndWait();
             }
         });
 
         cancelButton.setOnAction(actionEvent -> {
+            executorService.shutdown();
             stage.close();
         });
 

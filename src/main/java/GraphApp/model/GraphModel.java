@@ -6,13 +6,12 @@ import GraphApp.model.entities.GraphPart;
 import GraphApp.model.entities.Node;
 
 import java.sql.*;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.Date;
-import java.util.List;
-import java.util.Optional;
 
-public class GraphModel {
+public class GraphModel implements GraphModelInterface {
 
+    @Override
     public Graph saveGraph(Graph graph) {
         try (Connection connection=DAO.getInstance().getConnection()) {
             Graph insertedGraph=insertGraph(graph, connection);
@@ -49,7 +48,7 @@ public class GraphModel {
             return graph;
 
         } catch (SQLException throwables) {
-            throwables.printStackTrace();
+            System.out.println("Błąd bazy danych: "+throwables.getMessage());
         }
         return graph;
     }
@@ -148,6 +147,7 @@ public class GraphModel {
         }
     }
 
+    @Override
     public Optional<Graph> getGraph(int id) {
         String query="(SELECT graph.id as 'graphId', graph.directed as 'graphDirected', graph.name as 'graphName', graph.created as 'graphCreated',\n" +
                 "        graphpart.id as 'graphPartId', edge.id as 'edgeId', edge.weight as 'edgeWeight', graphpart.nodeId as 'gpNodeId',\n" +
@@ -182,11 +182,12 @@ public class GraphModel {
                 }
             }
         } catch (SQLException throwables) {
-            throwables.printStackTrace();
+            System.out.println("Błąd bazy danych: "+throwables.getMessage());
         }
         return Optional.empty();
     }
 
+    @Override
     public List<Graph> getAllGraphs() {
         List<Graph> methodResult=new ArrayList<>();
         String query="(SELECT graph.id as 'graphId', graph.directed as 'graphDirected', graph.name as 'graphName', graph.created as 'graphCreated',\n" +
@@ -214,7 +215,7 @@ public class GraphModel {
         ) {
             methodResult=this.getGraphsFromStndQuery(resultSet);
         } catch (SQLException throwables) {
-            throwables.getMessage();
+            System.out.println("Błąd bazy danych: "+throwables.getMessage());
         }
         return methodResult;
     }
@@ -307,5 +308,66 @@ public class GraphModel {
             });
         }
         return methodResult;
+    }
+
+    @Override
+    public Graph deleteGraph(Graph graph) {
+        String sql = "DELETE FROM graph where id=(?)";
+        Set<Node> nodes = new HashSet<>();
+        try(Connection connection = DAO.getInstance().getConnection();
+        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        ) {
+            preparedStatement.setInt(1, graph.getId());
+            preparedStatement.executeUpdate();
+            graph.getGraphParts().forEach(graphPart -> {
+                graphPart.getEdges().forEach(edge -> nodes.add(edge.getDestination()));
+                nodes.add(graphPart.getNode());
+            });
+            nodes.forEach(node -> this.deleteNode(node.getId(), connection));
+        }catch (SQLException e) {
+            System.out.println("Błąd bazy danych: "+e.getMessage());
+        }
+        return graph;
+    }
+
+
+    private void deleteNode(int nodeId, Connection connection) {
+        String query="DELETE FROM node WHERE node.id=(?)";
+        try (PreparedStatement preparedStatement=connection.prepareStatement(query)) {
+            preparedStatement.setInt(1, nodeId);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println("DeleteNode error: " + e.getMessage());
+        }
+    }
+
+    private void deleteEdge(int edgeId, Connection connection) {
+        String query="DELETE FROM edge WHERE edge.id=(?)";
+        try (PreparedStatement preparedStatement=connection.prepareStatement(query)) {
+            preparedStatement.setInt(1, edgeId);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println("deleteEdge error: " + e.getMessage());
+        }
+    }
+
+    private void deleteGraphPart(int graphPartId, Connection connection) {
+        String query="DELETE FROM graphpart WHERE graphpart.id=(?)";
+        try (PreparedStatement preparedStatement=connection.prepareStatement(query)) {
+            preparedStatement.setInt(1, graphPartId);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println("deleteGraphPart error: " + e.getMessage());
+        }
+    }
+
+    private void deleteGraph(int graphId, Connection connection) {
+        String query="DELETE FROM graph WHERE graph.id=(?)";
+        try (PreparedStatement preparedStatement=connection.prepareStatement(query)) {
+            preparedStatement.setInt(1, graphId);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println("deleteGraph error: " + e.getMessage());
+        }
     }
 }

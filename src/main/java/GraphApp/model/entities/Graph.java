@@ -9,10 +9,10 @@ import java.util.List;
 
 public class Graph {
 
-    private int id;
     private final BooleanProperty directed;
     private final ListProperty<GraphPart> graphParts;
     private final StringProperty name;
+    private int id;
     private Date created;
 
     public Graph(Boolean directed, String name, GraphPart... graphParts) {

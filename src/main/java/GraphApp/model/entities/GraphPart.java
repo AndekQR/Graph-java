@@ -9,9 +9,9 @@ import java.util.List;
 
 public class GraphPart {
 
+    private final ListProperty<Edge> edges;
     private int id;
     private Node node;
-    private final ListProperty<Edge> edges;
     private int graphId;
 
     public GraphPart(Node node, Edge... edges) {

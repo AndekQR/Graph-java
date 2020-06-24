@@ -28,5 +28,12 @@
     <orderEntry type="library" name="Maven: org.yaml:snakeyaml:android:1.23" level="project" />
     <orderEntry type="library" name="Maven: com.github.mifmif:generex:1.0.2" level="project" />
     <orderEntry type="library" name="Maven: dk.brics.automaton:automaton:1.11-8" level="project" />
+    <orderEntry type="library" name="Maven: com.arangodb:arangodb-java-driver:6.6.2" level="project" />
+    <orderEntry type="library" name="Maven: commons-logging:commons-logging:1.2" level="project" />
+    <orderEntry type="library" name="Maven: commons-codec:commons-codec:1.14" level="project" />
+    <orderEntry type="library" name="Maven: com.arangodb:velocypack:2.1.1" level="project" />
+    <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-core:2.9.10" level="project" />
+    <orderEntry type="library" name="Maven: org.slf4j:slf4j-api:1.7.30" level="project" />
+    <orderEntry type="library" name="Maven: org.slf4j:slf4j-simple:1.7.30" level="project" />
   </component>
 </module>

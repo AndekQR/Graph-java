@@ -17,8 +17,8 @@ CREATE TABLE GRAPHPART(
     nodeId int NOT NULL,
     graphId int NOT NULL,
     PRIMARY KEY (id),
-    FOREIGN KEY (graphId) REFERENCES GRAPH(id),
-    FOREIGN KEY (nodeId) REFERENCES NODE(id)
+    FOREIGN KEY (graphId) REFERENCES GRAPH(id) ON DELETE CASCADE,
+    FOREIGN KEY (nodeId) REFERENCES NODE(id) ON DELETE CASCADE
 ) ENGINE = InnoDB;
 
 -- wirtualne krawędzie mają nodeId == null
@@ -28,8 +28,8 @@ CREATE TABLE EDGE(
     graphPartId int NOT NULL,
     weight double NOT NULL,
     PRIMARY KEY (id),
-    FOREIGN KEY (nodeId) REFERENCES NODE(id),
-    FOREIGN KEY (graphPartId) REFERENCES GRAPHPART(id)
+    FOREIGN KEY (nodeId) REFERENCES NODE(id) ON DELETE CASCADE,
+    FOREIGN KEY (graphPartId) REFERENCES GRAPHPART(id) ON DELETE CASCADE
 ) ENGINE = InnoDB;
 
 
