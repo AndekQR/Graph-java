@@ -18,7 +18,6 @@ import java.util.regex.Pattern;
 public class NewGraphWindow {
 
     private int vertices;
-    private boolean directed;
     private String graphName;
 
     public NewGraphWindow(AddRandomGraphToDb addRandomGraphToDb) {
@@ -37,7 +36,6 @@ public class NewGraphWindow {
 
         Label verticesLabel=new Label("Vertices");
         TextField vertices=new TextField();
-        CheckBox directed=new CheckBox("Is directed? ");
         Label graphNameLabel=new Label("Graph name");
         TextField graphName=new TextField();
 
@@ -50,9 +48,6 @@ public class NewGraphWindow {
             }
         });
 
-        directed.selectedProperty().addListener((observableValue, aBoolean, t1) -> {
-            this.directed=t1;
-        });
 
         graphName.textProperty().addListener((observableValue, s, t1) -> {
             this.graphName=t1;
@@ -63,7 +58,7 @@ public class NewGraphWindow {
         tilePane.setHgap(10);
         tilePane.setVgap(5);
         tilePane.setAlignment(Pos.CENTER);
-        tilePane.getChildren().addAll(verticesLabel, vertices, directed, graphNameLabel, graphName);
+        tilePane.getChildren().addAll(verticesLabel, vertices, graphNameLabel, graphName);
         return tilePane;
     }
 
@@ -75,7 +70,7 @@ public class NewGraphWindow {
         okButton.setOnAction(actionEvent -> {
             if (this.graphName != null && !this.graphName.isEmpty() && this.vertices > 0) {
                 executorService.submit(() -> {
-                    addRandomGraphToDb.addToDB(this.vertices, this.directed, this.graphName);
+                    addRandomGraphToDb.addToDB(this.vertices, true, this.graphName);
                 });
                 executorService.shutdown();
                 stage.close();
