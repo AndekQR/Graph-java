@@ -2,7 +2,7 @@ package GraphApp.controllers;
 
 import GraphApp.model.GraphModelInterface;
 import GraphApp.model.entities.Node;
-import GraphApp.services.DijkstraAlgorythm;
+import GraphApp.services.DijkstraAlgorithm;
 import GraphApp.services.GraphUtils;
 import GraphApp.services.VisualizationAdapter;
 import com.brunomnsilva.smartgraph.graph.Graph;
@@ -67,7 +67,7 @@ public class MainController {
         return graphUtils.findNodeByName(graph, name);
     }
 
-    public DijkstraAlgorythm initDijkstraAlgorythm(GraphApp.model.entities.Graph graph, Node startNode){
-        return new DijkstraAlgorythm(graph, startNode);
+    public DijkstraAlgorithm initDijkstraAlgorythm(GraphApp.model.entities.Graph graph, Node startNode){
+        return new DijkstraAlgorithm(graph, startNode);
     }
 }

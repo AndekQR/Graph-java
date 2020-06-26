@@ -10,7 +10,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-public class DijkstraAlgorythm {
+public class DijkstraAlgorithm {
 
     private static final Double NO_PATH=99999.99999;
 
@@ -19,15 +19,15 @@ public class DijkstraAlgorythm {
 
 
     //lista do przetowrzenia
-    List<GraphPart> toProcess;
+    private List<GraphPart> toProcess;
     //lista przetworzona
-    List<GraphPart> processed;
+    private List<GraphPart> processed;
     //minimalny koszt dościa do poszczegołnego wierzchołka
-    List<Double> d;
+    private List<Double> d;
     //grappart poprzednik na scieżce
-    List<GraphPart> p;
+    private List<GraphPart> p;
 
-    public DijkstraAlgorythm(Graph graph, Node startNode) {
+    public DijkstraAlgorithm(Graph graph, Node startNode) {
         this.graph=graph;
         this.startNode=startNode;
 

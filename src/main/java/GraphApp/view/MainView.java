@@ -6,7 +6,7 @@ import GraphApp.model.entities.Edge;
 import GraphApp.model.entities.Graph;
 import GraphApp.model.entities.GraphPart;
 import GraphApp.model.entities.Node;
-import GraphApp.services.DijkstraAlgorythm;
+import GraphApp.services.DijkstraAlgorithm;
 import com.brunomnsilva.smartgraph.graph.GraphEdgeList;
 import com.brunomnsilva.smartgraph.graphview.SmartCircularSortedPlacementStrategy;
 import com.brunomnsilva.smartgraph.graphview.SmartGraphPanel;
@@ -175,20 +175,22 @@ public class MainView {
 
         VBox vBox=new VBox();
         button.setOnMouseClicked(mouseEvent -> {
-            Optional<Node> nodea=mainController.findNodeByName(graph, node_a.getText());
-            Optional<Node> nodeb=mainController.findNodeByName(graph, node_b.getText());
-            if (nodea.isPresent() && nodeb.isPresent()) {
-                DijkstraAlgorythm dijkstraAlgorythm=this.mainController.initDijkstraAlgorythm(graph, nodea.get());
-                Optional<Double> roadWeightToNode=dijkstraAlgorythm.getRoadWeightToNode(nodeb.get());
-                if (roadWeightToNode.isPresent()) {
-                    roadWeightText.setText("Road weight: " + roadWeightToNode.get());
-                    this.makePathInTheVisualization(dijkstraAlgorythm.getNodesInTheRouteTo(nodeb.get()));
-                } else {
-                    roadWeightText.setText("No path!");
+            executorService.submit(() -> {
+                Optional<Node> nodea=mainController.findNodeByName(graph, node_a.getText());
+                Optional<Node> nodeb=mainController.findNodeByName(graph, node_b.getText());
+                if (nodea.isPresent() && nodeb.isPresent()) {
+                    DijkstraAlgorithm dijkstraAlgorithm=this.mainController.initDijkstraAlgorythm(graph, nodea.get());
+                    Optional<Double> roadWeightToNode=dijkstraAlgorithm.getRoadWeightToNode(nodeb.get());
+                    if (roadWeightToNode.isPresent()) {
+                        dijkstraAlgorithm.printResult(nodeb.get());
+                        roadWeightText.setText("Road weight: " + roadWeightToNode.get());
+                        this.makePathInTheVisualization(dijkstraAlgorithm.getNodesInTheRouteTo(nodeb.get()));
+                    } else {
+                        roadWeightText.setText("No path!");
+                    }
                 }
-            }
+            });
         });
-
         vBox.getChildren().addAll(hBox, bottomHbox);
 
         return vBox;

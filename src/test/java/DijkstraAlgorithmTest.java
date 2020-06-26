@@ -1,6 +1,6 @@
 import GraphApp.model.entities.Graph;
 import GraphApp.model.entities.Node;
-import GraphApp.services.DijkstraAlgorythm;
+import GraphApp.services.DijkstraAlgorithm;
 import GraphApp.services.GraphUtils;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -10,9 +10,9 @@ import static org.junit.Assert.*;
 import java.util.List;
 import java.util.Optional;
 
-public class DijkstraAlgorythmTest {
+public class DijkstraAlgorithmTest {
 
-    private static DijkstraAlgorythm dijkstraAlgorythm;
+    private static DijkstraAlgorithm dijkstraAlgorithm;
     private static GraphUtils graphUtils;
 
     private static Node startNode;
@@ -24,7 +24,7 @@ public class DijkstraAlgorythmTest {
     public static void setup() throws Exception {
         graphUtils = new GraphUtils();
         Graph graph=getGraph();
-        dijkstraAlgorythm = new DijkstraAlgorythm(graph, startNode);
+        dijkstraAlgorithm= new DijkstraAlgorithm(graph, startNode);
     }
 
     public static Graph getGraph() throws Exception {
@@ -42,16 +42,16 @@ public class DijkstraAlgorythmTest {
 
     @Test
     public void weightCalculateTest(){
-        Optional<Double> roadWeightToNode=dijkstraAlgorythm.getRoadWeightToNode(endNode);
+        Optional<Double> roadWeightToNode=dijkstraAlgorithm.getRoadWeightToNode(endNode);
         assertTrue(roadWeightToNode.isPresent());
         assertEquals(3D, roadWeightToNode.get(), 0.0);
-        assertNull(dijkstraAlgorythm.getp().get(0));
+        assertNull(dijkstraAlgorithm.getp().get(0));
     }
 
     @Test
     public void roadNodesTest(){
-        dijkstraAlgorythm.printResult(endNode);
-        List<Node> nodesInTheRouteTo=dijkstraAlgorythm.getNodesInTheRouteTo(endNode);
+        dijkstraAlgorithm.printResult(endNode);
+        List<Node> nodesInTheRouteTo=dijkstraAlgorithm.getNodesInTheRouteTo(endNode);
         assertEquals(2, nodesInTheRouteTo.size());
         assertEquals(nodesInTheRouteTo.get(0), startNode);
         assertEquals(nodesInTheRouteTo.get(1), endNode);
